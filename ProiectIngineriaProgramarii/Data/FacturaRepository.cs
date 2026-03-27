@@ -51,6 +51,7 @@ namespace ProiectIngineriaProgramarii.Data
 
             foreach (var factura in facturi)
             {
+                factura.Client = _clientRepository.GetById(factura.ClientId);
                 factura.Itemi = GetItemuriFactura(factura.Id);
             }
 
@@ -86,6 +87,7 @@ namespace ProiectIngineriaProgramarii.Data
                     Status = reader.GetString(8)
                 };
 
+                factura.Client = _clientRepository.GetById(factura.ClientId);
                 factura.Itemi = GetItemuriFactura(factura.Id);
                 return factura;
             }

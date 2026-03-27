@@ -42,6 +42,33 @@ namespace ProiectIngineriaProgramarii.Data
             return clienti;
         }
 
+        public Client GetById(int id)
+        {
+            using var connection = _dbManager.GetConnection();
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT Id, Nume, Prenume, Email, Telefon, Adresa, DataInregistrare FROM Clienti WHERE Id = $id";
+            command.Parameters.AddWithValue("$id", id);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return new Client
+                {
+                    Id = reader.GetInt32(0),
+                    Nume = reader.GetString(1),
+                    Prenume = reader.GetString(2),
+                    Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    Telefon = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    Adresa = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    DataInregistrare = DateTime.Parse(reader.GetString(6))
+                };
+            }
+
+            return null;
+        }
+
         public void Add(Client client)
         {
             using var connection = _dbManager.GetConnection();

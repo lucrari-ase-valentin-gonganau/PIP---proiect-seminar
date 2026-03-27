@@ -32,7 +32,11 @@ namespace ProiectIngineriaProgramarii
             clientiToolStripMenuItem = new ToolStripMenuItem();
             produseToolStripMenuItem = new ToolStripMenuItem();
             facturiToolStripMenuItem = new ToolStripMenuItem();
+            adaugaFacturaToolStripMenuItem = new ToolStripMenuItem();
+            listaFacturiToolStripMenuItem = new ToolStripMenuItem();
             rapoarteToolStripMenuItem = new ToolStripMenuItem();
+            lblWelcome = new Label();
+            lblDescription = new Label();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -59,9 +63,22 @@ namespace ProiectIngineriaProgramarii
             // 
             // facturiToolStripMenuItem
             // 
+            facturiToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { adaugaFacturaToolStripMenuItem, listaFacturiToolStripMenuItem });
             facturiToolStripMenuItem.Name = "facturiToolStripMenuItem";
             facturiToolStripMenuItem.Size = new Size(56, 20);
             facturiToolStripMenuItem.Text = "Facturi";
+            // 
+            // adaugaFacturaToolStripMenuItem
+            // 
+            adaugaFacturaToolStripMenuItem.Name = "adaugaFacturaToolStripMenuItem";
+            adaugaFacturaToolStripMenuItem.Size = new Size(180, 22);
+            adaugaFacturaToolStripMenuItem.Text = "Adauga factura";
+            // 
+            // listaFacturiToolStripMenuItem
+            // 
+            listaFacturiToolStripMenuItem.Name = "listaFacturiToolStripMenuItem";
+            listaFacturiToolStripMenuItem.Size = new Size(180, 22);
+            listaFacturiToolStripMenuItem.Text = "Lista facturi";
             // 
             // rapoarteToolStripMenuItem
             // 
@@ -69,11 +86,35 @@ namespace ProiectIngineriaProgramarii
             rapoarteToolStripMenuItem.Size = new Size(68, 20);
             rapoarteToolStripMenuItem.Text = "Rapoarte";
             // 
+            // lblWelcome
+            // 
+            lblWelcome.AutoSize = true;
+            lblWelcome.Font = new Font("Yu Gothic", 24F, FontStyle.Bold);
+            lblWelcome.Location = new Point(200, 150);
+            lblWelcome.Name = "lblWelcome";
+            lblWelcome.Size = new Size(400, 42);
+            lblWelcome.TabIndex = 1;
+            lblWelcome.Text = "Sistem de Gestiune";
+            lblWelcome.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // lblDescription
+            // 
+            lblDescription.AutoSize = true;
+            lblDescription.Font = new Font("Yu Gothic", 12F);
+            lblDescription.Location = new Point(180, 220);
+            lblDescription.Name = "lblDescription";
+            lblDescription.Size = new Size(440, 21);
+            lblDescription.TabIndex = 2;
+            lblDescription.Text = "Selecteaza o optiune din meniul de sus pentru a incepe";
+            lblDescription.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // StartForm
             // 
             AutoScaleDimensions = new SizeF(7F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(lblDescription);
+            Controls.Add(lblWelcome);
             Controls.Add(menuStrip1);
             Font = new Font("Yu Gothic", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             MainMenuStrip = menuStrip1;
@@ -92,6 +133,10 @@ namespace ProiectIngineriaProgramarii
         private ToolStripMenuItem clientiToolStripMenuItem;
         private ToolStripMenuItem produseToolStripMenuItem;
         private ToolStripMenuItem facturiToolStripMenuItem;
+        private ToolStripMenuItem adaugaFacturaToolStripMenuItem;
+        private ToolStripMenuItem listaFacturiToolStripMenuItem;
         private ToolStripMenuItem rapoarteToolStripMenuItem;
+        private Label lblWelcome;
+        private Label lblDescription;
     }
 }

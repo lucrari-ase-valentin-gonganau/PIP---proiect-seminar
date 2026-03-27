@@ -57,70 +57,88 @@ namespace ProiectIngineriaProgramarii.WordAddin
         private void AdaugaAntet(Word.Document document, Factura factura)
         {
             var paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = "FACTURA\n";
-            paragraph.Range.Font.Size = 24;
+            paragraph.Range.Text = "FACTURA";
+            paragraph.Range.Font.Size = 28;
             paragraph.Range.Font.Bold = 1;
+            paragraph.Range.Font.Name = "Calibri";
             paragraph.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+            paragraph.SpaceAfter = 6;
             paragraph.Range.InsertParagraphAfter();
 
             paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = $"Nr. {factura.NumarFactura}\n";
-            paragraph.Range.Font.Size = 14;
+            paragraph.Range.Text = $"Nr. {factura.NumarFactura}";
+            paragraph.Range.Font.Size = 16;
             paragraph.Range.Font.Bold = 1;
+            paragraph.Range.Font.Name = "Calibri";
             paragraph.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+            paragraph.SpaceAfter = 6;
             paragraph.Range.InsertParagraphAfter();
 
             paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = $"Data: {factura.DataEmitere:dd.MM.yyyy}\n\n";
+            paragraph.Range.Text = $"Data: {factura.DataEmitere:dd.MM.yyyy}";
             paragraph.Range.Font.Size = 12;
             paragraph.Range.Font.Bold = 0;
+            paragraph.Range.Font.Name = "Calibri";
             paragraph.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+            paragraph.SpaceAfter = 20;
             paragraph.Range.InsertParagraphAfter();
         }
 
         private void AdaugaDetaliiClient(Word.Document document, Factura factura)
         {
             var paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = "DETALII CLIENT\n";
-            paragraph.Range.Font.Size = 12;
+            paragraph.Range.Text = "DETALII CLIENT";
+            paragraph.Range.Font.Size = 13;
             paragraph.Range.Font.Bold = 1;
+            paragraph.Range.Font.Name = "Calibri";
+            paragraph.SpaceBefore = 6;
+            paragraph.SpaceAfter = 8;
             paragraph.Range.InsertParagraphAfter();
 
             if (factura.Client != null)
             {
                 paragraph = document.Paragraphs.Add();
-                paragraph.Range.Text = $"Nume: {factura.Client.Nume} {factura.Client.Prenume}\n";
+                paragraph.Range.Text = $"Nume: {factura.Client.Nume} {factura.Client.Prenume}";
                 paragraph.Range.Font.Size = 11;
                 paragraph.Range.Font.Bold = 0;
+                paragraph.Range.Font.Name = "Calibri";
+                paragraph.SpaceAfter = 3;
                 paragraph.Range.InsertParagraphAfter();
 
                 if (!string.IsNullOrEmpty(factura.Client.Email))
                 {
                     paragraph = document.Paragraphs.Add();
-                    paragraph.Range.Text = $"Email: {factura.Client.Email}\n";
+                    paragraph.Range.Text = $"Email: {factura.Client.Email}";
                     paragraph.Range.Font.Size = 11;
+                    paragraph.Range.Font.Name = "Calibri";
+                    paragraph.SpaceAfter = 3;
                     paragraph.Range.InsertParagraphAfter();
                 }
 
                 if (!string.IsNullOrEmpty(factura.Client.Telefon))
                 {
                     paragraph = document.Paragraphs.Add();
-                    paragraph.Range.Text = $"Telefon: {factura.Client.Telefon}\n";
+                    paragraph.Range.Text = $"Telefon: {factura.Client.Telefon}";
                     paragraph.Range.Font.Size = 11;
+                    paragraph.Range.Font.Name = "Calibri";
+                    paragraph.SpaceAfter = 3;
                     paragraph.Range.InsertParagraphAfter();
                 }
 
                 if (!string.IsNullOrEmpty(factura.Client.Adresa))
                 {
                     paragraph = document.Paragraphs.Add();
-                    paragraph.Range.Text = $"Adresa: {factura.Client.Adresa}\n";
+                    paragraph.Range.Text = $"Adresa: {factura.Client.Adresa}";
                     paragraph.Range.Font.Size = 11;
+                    paragraph.Range.Font.Name = "Calibri";
+                    paragraph.SpaceAfter = 3;
                     paragraph.Range.InsertParagraphAfter();
                 }
             }
 
             paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = "\n";
+            paragraph.Range.Text = "";
+            paragraph.SpaceAfter = 12;
             paragraph.Range.InsertParagraphAfter();
         }
 
@@ -133,16 +151,22 @@ namespace ProiectIngineriaProgramarii.WordAddin
             var table = document.Tables.Add(range, numRows, numCols);
 
             table.Borders.Enable = 1;
+            table.Borders.OutsideLineStyle = Word.WdLineStyle.wdLineStyleSingle;
+            table.Borders.InsideLineStyle = Word.WdLineStyle.wdLineStyleSingle;
             table.Range.Font.Size = 10;
+            table.Range.Font.Name = "Calibri";
 
             table.Cell(1, 1).Range.Text = "Nr.";
             table.Cell(1, 2).Range.Text = "Produs";
             table.Cell(1, 3).Range.Text = "Cantitate";
-            table.Cell(1, 4).Range.Text = "Preț Unitar (RON)";
+            table.Cell(1, 4).Range.Text = "Pret Unitar (RON)";
             table.Cell(1, 5).Range.Text = "Subtotal (RON)";
 
             table.Rows[1].Range.Font.Bold = 1;
-            table.Rows[1].Shading.BackgroundPatternColor = Word.WdColor.wdColorGray20;
+            table.Rows[1].Range.Font.Size = 11;
+            table.Rows[1].Shading.BackgroundPatternColor = Word.WdColor.wdColorGray15;
+            table.Rows[1].HeightRule = Word.WdRowHeightRule.wdRowHeightAtLeast;
+            table.Rows[1].Height = 25f;
 
             for (int i = 0; i < factura.Itemi.Count; i++)
             {
@@ -150,42 +174,62 @@ namespace ProiectIngineriaProgramarii.WordAddin
                 int rowIndex = i + 2;
 
                 table.Cell(rowIndex, 1).Range.Text = (i + 1).ToString();
+                table.Cell(rowIndex, 1).Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
                 table.Cell(rowIndex, 2).Range.Text = item.NumeProdus;
+
                 table.Cell(rowIndex, 3).Range.Text = item.Cantitate.ToString();
+                table.Cell(rowIndex, 3).Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
                 table.Cell(rowIndex, 4).Range.Text = item.PretUnitar.ToString("N2");
+                table.Cell(rowIndex, 4).Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphRight;
+
                 table.Cell(rowIndex, 5).Range.Text = item.Subtotal.ToString("N2");
+                table.Cell(rowIndex, 5).Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphRight;
+
+                table.Rows[rowIndex].HeightRule = Word.WdRowHeightRule.wdRowHeightAtLeast;
+                table.Rows[rowIndex].Height = 20f;
             }
 
-            table.Columns[1].Width = 30f;
-            table.Columns[2].Width = 180f;
-            table.Columns[3].Width = 60f;
-            table.Columns[4].Width = 80f;
-            table.Columns[5].Width = 80f;
+            table.Columns[1].Width = 35f;
+            table.Columns[2].Width = 200f;
+            table.Columns[3].Width = 70f;
+            table.Columns[4].Width = 90f;
+            table.Columns[5].Width = 90f;
+
+            table.Range.Cells.VerticalAlignment = Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter;
 
             var paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = "\n";
+            paragraph.Range.Text = "";
+            paragraph.SpaceAfter = 15;
             paragraph.Range.InsertParagraphAfter();
         }
 
         private void AdaugaTotaluri(Word.Document document, Factura factura)
         {
             var paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = $"Subtotal: {factura.Subtotal:N2} RON\n";
+            paragraph.Range.Text = $"Subtotal: {factura.Subtotal:N2} RON";
             paragraph.Range.Font.Size = 11;
+            paragraph.Range.Font.Name = "Calibri";
             paragraph.Alignment = Word.WdParagraphAlignment.wdAlignParagraphRight;
+            paragraph.SpaceAfter = 4;
             paragraph.Range.InsertParagraphAfter();
 
             paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = $"TVA (19%): {factura.TVA:N2} RON\n";
+            paragraph.Range.Text = $"TVA (19%): {factura.TVA:N2} RON";
             paragraph.Range.Font.Size = 11;
+            paragraph.Range.Font.Name = "Calibri";
             paragraph.Alignment = Word.WdParagraphAlignment.wdAlignParagraphRight;
+            paragraph.SpaceAfter = 4;
             paragraph.Range.InsertParagraphAfter();
 
             paragraph = document.Paragraphs.Add();
-            paragraph.Range.Text = $"TOTAL: {factura.Total:N2} RON\n\n";
-            paragraph.Range.Font.Size = 14;
+            paragraph.Range.Text = $"TOTAL: {factura.Total:N2} RON";
+            paragraph.Range.Font.Size = 16;
             paragraph.Range.Font.Bold = 1;
+            paragraph.Range.Font.Name = "Calibri";
             paragraph.Alignment = Word.WdParagraphAlignment.wdAlignParagraphRight;
+            paragraph.SpaceAfter = 20;
             paragraph.Range.InsertParagraphAfter();
         }
 
@@ -194,23 +238,31 @@ namespace ProiectIngineriaProgramarii.WordAddin
             if (!string.IsNullOrEmpty(factura.Observatii))
             {
                 var paragraph = document.Paragraphs.Add();
-                paragraph.Range.Text = "Observații:\n";
-                paragraph.Range.Font.Size = 10;
+                paragraph.Range.Text = "Observatii:";
+                paragraph.Range.Font.Size = 11;
                 paragraph.Range.Font.Bold = 1;
+                paragraph.Range.Font.Name = "Calibri";
+                paragraph.SpaceBefore = 6;
+                paragraph.SpaceAfter = 6;
                 paragraph.Range.InsertParagraphAfter();
 
                 paragraph = document.Paragraphs.Add();
-                paragraph.Range.Text = $"{factura.Observatii}\n\n";
+                paragraph.Range.Text = factura.Observatii;
                 paragraph.Range.Font.Size = 10;
                 paragraph.Range.Font.Bold = 0;
+                paragraph.Range.Font.Name = "Calibri";
+                paragraph.SpaceAfter = 15;
                 paragraph.Range.InsertParagraphAfter();
             }
 
             var paragraphFinal = document.Paragraphs.Add();
-            paragraphFinal.Range.Text = "Vă mulțumim pentru colaborare!\n";
-            paragraphFinal.Range.Font.Size = 10;
+            paragraphFinal.Range.Text = "Va multumim pentru colaborare!";
+            paragraphFinal.Range.Font.Size = 11;
             paragraphFinal.Range.Font.Italic = 1;
+            paragraphFinal.Range.Font.Name = "Calibri";
+            paragraphFinal.Range.Font.Color = Word.WdColor.wdColorGray50;
             paragraphFinal.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+            paragraphFinal.SpaceBefore = 10;
             paragraphFinal.Range.InsertParagraphAfter();
         }
 
@@ -218,7 +270,7 @@ namespace ProiectIngineriaProgramarii.WordAddin
         {
             if (!File.Exists(caleFisier))
             {
-                throw new FileNotFoundException("Fișierul nu a fost găsit.", caleFisier);
+                throw new FileNotFoundException("Fisierul nu a fost gasit.", caleFisier);
             }
 
             Word.Application wordApp = null;

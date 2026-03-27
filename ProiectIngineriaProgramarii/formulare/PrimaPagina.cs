@@ -9,6 +9,7 @@ namespace ProiectIngineriaProgramarii
             InitializeComponent();
             CreateMainPanel();
             SetupMenuNavigation();
+            ShowWelcomeScreen();
         }
 
         private void CreateMainPanel()
@@ -18,23 +19,35 @@ namespace ProiectIngineriaProgramarii
                 Dock = DockStyle.Fill,
                 Location = new Point(0, menuStrip1.Height),
                 Name = "mainPanel",
-                TabIndex = 100
+                TabIndex = 100,
+                BackColor = Color.White
             };
             this.Controls.Add(mainPanel);
-            mainPanel.BringToFront();
+            mainPanel.SendToBack();
+        }
+
+        private void ShowWelcomeScreen()
+        {
+            lblWelcome.BringToFront();
+            lblDescription.BringToFront();
         }
 
         private void SetupMenuNavigation()
         {
             clientiToolStripMenuItem.Click += (s, e) => LoadFormInPanel(new ClientiForm(this));
             produseToolStripMenuItem.Click += (s, e) => LoadFormInPanel(new ProduseForm(this));
-            facturiToolStripMenuItem.Click += (s, e) => LoadFormInPanel(new FacturiForm(this));
+            adaugaFacturaToolStripMenuItem.Click += (s, e) => LoadFormInPanel(new FacturiForm(this));
+            listaFacturiToolStripMenuItem.Click += (s, e) => LoadFormInPanel(new ListaFacturiForm(this));
             rapoarteToolStripMenuItem.Click += (s, e) => LoadFormInPanel(new RapoarteForm(this));
         }
 
         public void LoadFormInPanel(Form childForm)
         {
+            lblWelcome.Visible = false;
+            lblDescription.Visible = false;
+
             mainPanel.Controls.Clear();
+            mainPanel.BringToFront();
 
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
@@ -48,6 +61,9 @@ namespace ProiectIngineriaProgramarii
         public void ShowMainMenu()
         {
             mainPanel.Controls.Clear();
+            mainPanel.SendToBack();
+            lblWelcome.Visible = true;
+            lblDescription.Visible = true;
         }
 
         private void Form1_Load(object sender, EventArgs e)
