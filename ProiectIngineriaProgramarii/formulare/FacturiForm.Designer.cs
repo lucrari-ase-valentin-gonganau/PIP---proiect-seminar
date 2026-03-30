@@ -226,7 +226,7 @@ namespace ProiectIngineriaProgramarii
             lblTVA.Name = "lblTVA";
             lblTVA.Size = new Size(79, 18);
             lblTVA.TabIndex = 2;
-            lblTVA.Text = "TVA (19%):";
+            lblTVA.Text = "TVA (21%):";
             // 
             // lblSubtotalValue
             // 

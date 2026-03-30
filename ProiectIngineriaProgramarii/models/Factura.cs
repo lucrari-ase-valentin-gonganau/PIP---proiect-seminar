@@ -31,7 +31,7 @@ namespace ProiectIngineriaProgramarii.Models
             {
                 Subtotal += item.Subtotal;
             }
-            TVA = Subtotal * 0.19m;
+            TVA = Subtotal * 0.21m;
             Total = Subtotal + TVA;
         }
     }

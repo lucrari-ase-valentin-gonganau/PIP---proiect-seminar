@@ -56,7 +56,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
 
         private void AdaugaAntetRaport(Excel.Worksheet worksheet, DateTime dataStart, DateTime dataSfarsit)
         {
-            worksheet.Cells[1, 1] = "RAPORT VÂNZĂRI";
+            worksheet.Cells[1, 1] = "RAPORT VANZARI";
             worksheet.Range["A1", "F1"].Merge();
             worksheet.Range["A1"].Font.Size = 16;
             worksheet.Range["A1"].Font.Bold = true;
@@ -72,7 +72,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
         {
             int startRow = 4;
 
-            worksheet.Cells[startRow, 1] = "Nr. Factură";
+            worksheet.Cells[startRow, 1] = "Nr. Factura";
             worksheet.Cells[startRow, 2] = "Data";
             worksheet.Cells[startRow, 3] = "Client";
             worksheet.Cells[startRow, 4] = "Subtotal (RON)";
@@ -171,7 +171,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
                 int startRow = 3;
                 worksheet.Cells[startRow, 1] = "ID";
                 worksheet.Cells[startRow, 2] = "Nume Produs";
-                worksheet.Cells[startRow, 3] = "Preț (RON)";
+                worksheet.Cells[startRow, 3] = "Pret (RON)";
                 worksheet.Cells[startRow, 4] = "Stoc Disponibil";
                 worksheet.Cells[startRow, 5] = "Valoare Stoc (RON)";
 
@@ -691,9 +691,9 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
             worksheet.Range["A1"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
             int startRow = 3;
-            worksheet.Cells[startRow, 1] = "Poziție";
+            worksheet.Cells[startRow, 1] = "Pozitie";
             worksheet.Cells[startRow, 2] = "Nume Produs";
-            worksheet.Cells[startRow, 3] = "Cantitate Vândută";
+            worksheet.Cells[startRow, 3] = "Cantitate Vanduta";
 
             Excel.Range headerRange = worksheet.Range[$"A{startRow}", $"C{startRow}"];
             headerRange.Font.Bold = true;
@@ -729,9 +729,9 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
             worksheet.Range["A1"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
             int startRow = 3;
-            worksheet.Cells[startRow, 1] = "Poziție";
+            worksheet.Cells[startRow, 1] = "Pozitie";
             worksheet.Cells[startRow, 2] = "Nume Client";
-            worksheet.Cells[startRow, 3] = "Valoare Totală (RON)";
+            worksheet.Cells[startRow, 3] = "Valoare Totala (RON)";
 
             Excel.Range headerRange = worksheet.Range[$"A{startRow}", $"C{startRow}"];
             headerRange.Font.Bold = true;
@@ -763,7 +763,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
 
         private void CreazaSheetVanzariLunare(Excel.Worksheet worksheet, Dictionary<string, decimal> vanzariLunare)
         {
-            worksheet.Cells[1, 1] = "VÂNZĂRI PE LUNI";
+            worksheet.Cells[1, 1] = "VANZARI PE LUNI";
             worksheet.Range["A1", "B1"].Merge();
             worksheet.Range["A1"].Font.Size = 16;
             worksheet.Range["A1"].Font.Bold = true;
@@ -771,7 +771,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
 
             int startRow = 3;
             worksheet.Cells[startRow, 1] = "Luna";
-            worksheet.Cells[startRow, 2] = "Vânzări (RON)";
+            worksheet.Cells[startRow, 2] = "Vanzari (RON)";
 
             Excel.Range headerRange = worksheet.Range[$"A{startRow}", $"B{startRow}"];
             headerRange.Font.Bold = true;
@@ -806,7 +806,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
                 chart.SetSourceData(chartRange);
                 chart.ChartType = Excel.XlChartType.xlColumnClustered;
                 chart.HasTitle = true;
-                chart.ChartTitle.Text = "Evoluția Vânzărilor pe Luni";
+                chart.ChartTitle.Text = "Evolutia Vanzarilor pe Luni";
                 chart.HasLegend = false;
 
                 Excel.Axis xAxis = (Excel.Axis)chart.Axes(Excel.XlAxisType.xlCategory);
@@ -815,7 +815,7 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
 
                 Excel.Axis yAxis = (Excel.Axis)chart.Axes(Excel.XlAxisType.xlValue);
                 yAxis.HasTitle = true;
-                yAxis.AxisTitle.Text = "Vânzări (RON)";
+                yAxis.AxisTitle.Text = "Vanzari (RON)";
             }
         }
     }

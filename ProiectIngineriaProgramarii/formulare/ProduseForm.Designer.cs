@@ -38,9 +38,9 @@ namespace ProiectIngineriaProgramarii
             lblTitle.Font = new Font("Yu Gothic", 18F, FontStyle.Bold);
             lblTitle.Location = new Point(130, 20);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(223, 31);
+            lblTitle.Size = new Size(257, 31);
             lblTitle.TabIndex = 0;
-            lblTitle.Text = "Gestiune Produse";
+            lblTitle.Text = "Gestiune de produse";
             // 
             // lblNume
             // 
@@ -125,7 +125,7 @@ namespace ProiectIngineriaProgramarii
             btnAdauga.Name = "btnAdauga";
             btnAdauga.Size = new Size(230, 40);
             btnAdauga.TabIndex = 9;
-            btnAdauga.Text = "Adauga Produs";
+            btnAdauga.Text = "Adauga un produs";
             btnAdauga.UseVisualStyleBackColor = false;
             btnAdauga.Click += btnAdauga_Click;
             // 

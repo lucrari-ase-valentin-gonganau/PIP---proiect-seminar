@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using ProiectIngineriaProgramarii.Models;
 using Word = Microsoft.Office.Interop.Word;
 
-namespace ProiectIngineriaProgramarii.WordAddin
+namespace ProiectIngineriaProgramarii.Addin
 {
     public class FacturaWordGenerator
     {

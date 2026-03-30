@@ -28,33 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnVeziGraficExcel = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            btnRaportInteractiv = new Button();
+            SuspendLayout();
             // 
-            // btnVeziGraficExcel
+            // btnRaportInteractiv
             // 
-            this.btnVeziGraficExcel.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.btnVeziGraficExcel.Location = new System.Drawing.Point(250, 150);
-            this.btnVeziGraficExcel.Name = "btnVeziGraficExcel";
-            this.btnVeziGraficExcel.Size = new System.Drawing.Size(300, 80);
-            this.btnVeziGraficExcel.TabIndex = 0;
-            this.btnVeziGraficExcel.Text = "Vezi Graficul în Excel";
-            this.btnVeziGraficExcel.UseVisualStyleBackColor = true;
-            this.btnVeziGraficExcel.Click += new System.EventHandler(this.btnVeziGraficExcel_Click);
+            btnRaportInteractiv.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnRaportInteractiv.Location = new Point(219, 112);
+            btnRaportInteractiv.Margin = new Padding(3, 2, 3, 2);
+            btnRaportInteractiv.Name = "btnRaportInteractiv";
+            btnRaportInteractiv.Size = new Size(262, 60);
+            btnRaportInteractiv.TabIndex = 0;
+            btnRaportInteractiv.Text = "Vezi Graficul In Excel (Cu Evenimente)";
+            btnRaportInteractiv.UseVisualStyleBackColor = true;
+            btnRaportInteractiv.Click += btnRaportInteractiv_Click;
             // 
             // RapoarteForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.btnVeziGraficExcel);
-            this.Name = "RapoarteForm";
-            this.Text = "RapoarteForm";
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(700, 338);
+            Controls.Add(btnRaportInteractiv);
+            Margin = new Padding(3, 2, 3, 2);
+            Name = "RapoarteForm";
+            Text = "RapoarteForm";
+            ResumeLayout(false);
         }
 
         #endregion
 
-        private System.Windows.Forms.Button btnVeziGraficExcel;
+        private System.Windows.Forms.Button btnRaportInteractiv;
     }
 }
