@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using ProiectIngineriaProgramarii.Models;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -548,6 +549,273 @@ namespace ProiectIngineriaProgramarii.ExcelAddin
                 }
 
                 throw new Exception($"Eroare la deschiderea raportului: {ex.Message}", ex);
+            }
+        }
+
+        public void GenereazaRaportComplet(List<Factura> facturi, string caleFisier)
+        {
+            Excel.Application excelApp = null;
+            Excel.Workbook workbook = null;
+            Excel.Worksheet worksheetProduse = null;
+            Excel.Worksheet worksheetClienti = null;
+            Excel.Worksheet worksheetVanzari = null;
+
+            try
+            {
+                excelApp = new Excel.Application();
+                excelApp.DisplayAlerts = false;
+                workbook = excelApp.Workbooks.Add();
+
+                worksheetProduse = (Excel.Worksheet)workbook.Worksheets.Add();
+                worksheetProduse.Name = "Top Produse";
+
+                worksheetClienti = (Excel.Worksheet)workbook.Worksheets.Add();
+                worksheetClienti.Name = "Top Clienti";
+
+                worksheetVanzari = (Excel.Worksheet)workbook.Worksheets[1];
+                worksheetVanzari.Name = "Vanzari Lunare";
+
+                var topProduse = CalculeazaTopProduse(facturi);
+                CreazaSheetTopProduse(worksheetProduse, topProduse);
+
+                var topClienti = CalculeazaTopClienti(facturi);
+                CreazaSheetTopClienti(worksheetClienti, topClienti);
+
+                var vanzariLunare = CalculeazaVanzariPeLuni(facturi);
+                CreazaSheetVanzariLunare(worksheetVanzari, vanzariLunare);
+
+                workbook.SaveAs(caleFisier);
+                workbook.Close();
+                excelApp.Quit();
+
+                if (worksheetProduse != null) Marshal.ReleaseComObject(worksheetProduse);
+                if (worksheetClienti != null) Marshal.ReleaseComObject(worksheetClienti);
+                if (worksheetVanzari != null) Marshal.ReleaseComObject(worksheetVanzari);
+                if (workbook != null) Marshal.ReleaseComObject(workbook);
+                if (excelApp != null) Marshal.ReleaseComObject(excelApp);
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    if (workbook != null)
+                    {
+                        workbook.Close(false);
+                        Marshal.ReleaseComObject(workbook);
+                    }
+
+                    if (excelApp != null)
+                    {
+                        excelApp.Quit();
+                        Marshal.ReleaseComObject(excelApp);
+                    }
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+                catch { }
+
+                throw new Exception($"Eroare la generarea raportului complet: {ex.Message}", ex);
+            }
+        }
+
+        private Dictionary<string, decimal> CalculeazaTopProduse(List<Factura> facturi)
+        {
+            var produseCantitati = new Dictionary<string, decimal>();
+
+            foreach (var factura in facturi)
+            {
+                foreach (var item in factura.Itemi)
+                {
+                    if (!produseCantitati.ContainsKey(item.NumeProdus))
+                    {
+                        produseCantitati[item.NumeProdus] = 0;
+                    }
+                    produseCantitati[item.NumeProdus] += item.Cantitate;
+                }
+            }
+
+            return produseCantitati.OrderByDescending(x => x.Value)
+                                   .Take(10)
+                                   .ToDictionary(x => x.Key, x => x.Value);
+        }
+
+        private Dictionary<string, decimal> CalculeazaTopClienti(List<Factura> facturi)
+        {
+            var clientiValori = new Dictionary<string, decimal>();
+
+            foreach (var factura in facturi)
+            {
+                if (factura.Client != null)
+                {
+                    string numeClient = factura.Client.NumeComplet;
+                    if (!clientiValori.ContainsKey(numeClient))
+                    {
+                        clientiValori[numeClient] = 0;
+                    }
+                    clientiValori[numeClient] += factura.Total;
+                }
+            }
+
+            return clientiValori.OrderByDescending(x => x.Value)
+                                .Take(10)
+                                .ToDictionary(x => x.Key, x => x.Value);
+        }
+
+        private Dictionary<string, decimal> CalculeazaVanzariPeLuni(List<Factura> facturi)
+        {
+            var vanzariLunare = new Dictionary<string, decimal>();
+
+            foreach (var factura in facturi)
+            {
+                string lunaAn = factura.DataEmitere.ToString("yyyy-MM");
+                if (!vanzariLunare.ContainsKey(lunaAn))
+                {
+                    vanzariLunare[lunaAn] = 0;
+                }
+                vanzariLunare[lunaAn] += factura.Total;
+            }
+
+            return vanzariLunare.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+        }
+
+        private void CreazaSheetTopProduse(Excel.Worksheet worksheet, Dictionary<string, decimal> topProduse)
+        {
+            worksheet.Cells[1, 1] = "TOP 10 PRODUSE CELE MAI VÂNDUTE";
+            worksheet.Range["A1", "C1"].Merge();
+            worksheet.Range["A1"].Font.Size = 16;
+            worksheet.Range["A1"].Font.Bold = true;
+            worksheet.Range["A1"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+            int startRow = 3;
+            worksheet.Cells[startRow, 1] = "Poziție";
+            worksheet.Cells[startRow, 2] = "Nume Produs";
+            worksheet.Cells[startRow, 3] = "Cantitate Vândută";
+
+            Excel.Range headerRange = worksheet.Range[$"A{startRow}", $"C{startRow}"];
+            headerRange.Font.Bold = true;
+            headerRange.Interior.Color = Excel.XlRgbColor.rgbLightBlue;
+            headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+            int currentRow = startRow + 1;
+            int pozitie = 1;
+            foreach (var produs in topProduse)
+            {
+                worksheet.Cells[currentRow, 1] = pozitie;
+                worksheet.Cells[currentRow, 2] = produs.Key;
+                worksheet.Cells[currentRow, 3] = produs.Value;
+                pozitie++;
+                currentRow++;
+            }
+
+            Excel.Range tableRange = worksheet.Range[$"A{startRow}", $"C{currentRow - 1}"];
+            tableRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+            tableRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
+
+            ((Excel.Range)worksheet.Columns["A:A"]).ColumnWidth = 10;
+            ((Excel.Range)worksheet.Columns["B:B"]).ColumnWidth = 35;
+            ((Excel.Range)worksheet.Columns["C:C"]).ColumnWidth = 20;
+        }
+
+        private void CreazaSheetTopClienti(Excel.Worksheet worksheet, Dictionary<string, decimal> topClienti)
+        {
+            worksheet.Cells[1, 1] = "TOP 10 CLIENȚI";
+            worksheet.Range["A1", "C1"].Merge();
+            worksheet.Range["A1"].Font.Size = 16;
+            worksheet.Range["A1"].Font.Bold = true;
+            worksheet.Range["A1"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+            int startRow = 3;
+            worksheet.Cells[startRow, 1] = "Poziție";
+            worksheet.Cells[startRow, 2] = "Nume Client";
+            worksheet.Cells[startRow, 3] = "Valoare Totală (RON)";
+
+            Excel.Range headerRange = worksheet.Range[$"A{startRow}", $"C{startRow}"];
+            headerRange.Font.Bold = true;
+            headerRange.Interior.Color = Excel.XlRgbColor.rgbLightGreen;
+            headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+            int currentRow = startRow + 1;
+            int pozitie = 1;
+            foreach (var client in topClienti)
+            {
+                worksheet.Cells[currentRow, 1] = pozitie;
+                worksheet.Cells[currentRow, 2] = client.Key;
+                worksheet.Cells[currentRow, 3] = client.Value;
+                pozitie++;
+                currentRow++;
+            }
+
+            Excel.Range tableRange = worksheet.Range[$"A{startRow}", $"C{currentRow - 1}"];
+            tableRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+            tableRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
+
+            Excel.Range valuesRange = worksheet.Range[$"C{startRow + 1}", $"C{currentRow - 1}"];
+            valuesRange.NumberFormat = "#,##0.00";
+
+            ((Excel.Range)worksheet.Columns["A:A"]).ColumnWidth = 10;
+            ((Excel.Range)worksheet.Columns["B:B"]).ColumnWidth = 35;
+            ((Excel.Range)worksheet.Columns["C:C"]).ColumnWidth = 20;
+        }
+
+        private void CreazaSheetVanzariLunare(Excel.Worksheet worksheet, Dictionary<string, decimal> vanzariLunare)
+        {
+            worksheet.Cells[1, 1] = "VÂNZĂRI PE LUNI";
+            worksheet.Range["A1", "B1"].Merge();
+            worksheet.Range["A1"].Font.Size = 16;
+            worksheet.Range["A1"].Font.Bold = true;
+            worksheet.Range["A1"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+            int startRow = 3;
+            worksheet.Cells[startRow, 1] = "Luna";
+            worksheet.Cells[startRow, 2] = "Vânzări (RON)";
+
+            Excel.Range headerRange = worksheet.Range[$"A{startRow}", $"B{startRow}"];
+            headerRange.Font.Bold = true;
+            headerRange.Interior.Color = Excel.XlRgbColor.rgbLightYellow;
+            headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+            int currentRow = startRow + 1;
+            foreach (var luna in vanzariLunare)
+            {
+                worksheet.Cells[currentRow, 1] = luna.Key;
+                worksheet.Cells[currentRow, 2] = luna.Value;
+                currentRow++;
+            }
+
+            Excel.Range tableRange = worksheet.Range[$"A{startRow}", $"B{currentRow - 1}"];
+            tableRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+            tableRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
+
+            Excel.Range valuesRange = worksheet.Range[$"B{startRow + 1}", $"B{currentRow - 1}"];
+            valuesRange.NumberFormat = "#,##0.00";
+
+            ((Excel.Range)worksheet.Columns["A:A"]).ColumnWidth = 15;
+            ((Excel.Range)worksheet.Columns["B:B"]).ColumnWidth = 20;
+
+            if (vanzariLunare.Count > 0)
+            {
+                Excel.Range chartRange = worksheet.Range[$"A{startRow}", $"B{currentRow - 1}"];
+                Excel.ChartObjects chartObjects = (Excel.ChartObjects)worksheet.ChartObjects();
+                Excel.ChartObject chartObject = chartObjects.Add(480, 50, 500, 300);
+                Excel.Chart chart = chartObject.Chart;
+
+                chart.SetSourceData(chartRange);
+                chart.ChartType = Excel.XlChartType.xlColumnClustered;
+                chart.HasTitle = true;
+                chart.ChartTitle.Text = "Evoluția Vânzărilor pe Luni";
+                chart.HasLegend = false;
+
+                Excel.Axis xAxis = (Excel.Axis)chart.Axes(Excel.XlAxisType.xlCategory);
+                xAxis.HasTitle = true;
+                xAxis.AxisTitle.Text = "Luna";
+
+                Excel.Axis yAxis = (Excel.Axis)chart.Axes(Excel.XlAxisType.xlValue);
+                yAxis.HasTitle = true;
+                yAxis.AxisTitle.Text = "Vânzări (RON)";
             }
         }
     }
