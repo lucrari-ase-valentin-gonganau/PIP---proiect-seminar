@@ -89,8 +89,8 @@ namespace ProiectIngineriaProgramarii
             try
             {
                 excelApp = new Excel.Application();
-                excelApp.Visible = true;
-                excelApp.DisplayAlerts = true;
+                excelApp.Visible = false;
+                excelApp.DisplayAlerts = false;
                 excelApp.ScreenUpdating = false;
 
                 workbook = excelApp.Workbooks.Add();
@@ -152,6 +152,63 @@ namespace ProiectIngineriaProgramarii
                 logSheet.Cells[logRow, 4] = "ACTIV";
                 ((Excel.Range)logSheet.Cells[logRow, 4]).Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Green);
                 logRow++;
+
+                // Creeaza celelalte sheet-uri in ordine corecta
+                Excel.Worksheet worksheetVanzari = (Excel.Worksheet)workbook.Worksheets.Add();
+                worksheetVanzari.Name = "Vanzari Lunare";
+
+                Excel.Worksheet worksheetClienti = (Excel.Worksheet)workbook.Worksheets.Add();
+                worksheetClienti.Name = "Top Clienti";
+
+                Excel.Worksheet worksheetProduse = (Excel.Worksheet)workbook.Worksheets.Add();
+                worksheetProduse.Name = "Top Produse";
+
+                // Genereaza raportul complet
+                var generator = new RapoarteExcelGenerator();
+
+                var topProduse = CalculeazaTopProduse(facturi);
+                CreazaSheetTopProduseSimplificat(worksheetProduse, topProduse);
+
+                var topClienti = CalculeazaTopClienti(facturi);
+                CreazaSheetTopClientiSimplificat(worksheetClienti, topClienti);
+
+                var vanzariLunare = CalculeazaVanzariPeLuni(facturi);
+                CreazaSheetVanzariLunareSimplificat(worksheetVanzari, vanzariLunare);
+
+                // Sterge Sheet1 implicit (cel gol)
+                try
+                {
+                    Excel.Worksheet sheet1 = null;
+                    foreach (Excel.Worksheet ws in workbook.Worksheets)
+                    {
+                        if (ws.Name == "Sheet1" || ws.Name == "Foaie1")
+                        {
+                            sheet1 = ws;
+                            break;
+                        }
+                    }
+                    if (sheet1 != null)
+                    {
+                        excelApp.DisplayAlerts = false;
+                        sheet1.Delete();
+                        excelApp.DisplayAlerts = false;
+                    }
+                }
+                catch { }
+
+                // Adauga buton pentru editare date (deschide form C#)
+                AdaugaButonEditareDate(worksheetVanzari, workbook);
+
+                // Formatare log sheet
+                ((Excel.Range)logSheet.Columns["A:A"]).ColumnWidth = 12;
+                ((Excel.Range)logSheet.Columns["B:B"]).ColumnWidth = 18;
+                ((Excel.Range)logSheet.Columns["C:C"]).ColumnWidth = 40;
+                ((Excel.Range)logSheet.Columns["D:D"]).ColumnWidth = 15;
+                ((Excel.Range)logSheet.Columns["F:F"]).ColumnWidth = 8;
+                ((Excel.Range)logSheet.Columns["G:G"]).ColumnWidth = 16;
+                ((Excel.Range)logSheet.Columns["H:H"]).ColumnWidth = 35;
+
+                // ACUM ATASAM EVENIMENTELE - DUPA CE TOATE SHEET-URILE SUNT GATA
 
                 // TRATARE EVENIMENT OFFICE - BeforeSave
                 workbook.BeforeSave += (bool SaveAsUI, ref bool Cancel) =>
@@ -222,38 +279,12 @@ namespace ProiectIngineriaProgramarii
                     catch { }
                 };
 
-                // Creeaza celelalte sheet-uri in ordine corecta
-                Excel.Worksheet worksheetVanzari = (Excel.Worksheet)workbook.Worksheets.Add();
-                worksheetVanzari.Name = "Vanzari Lunare";
 
-                Excel.Worksheet worksheetClienti = (Excel.Worksheet)workbook.Worksheets.Add();
-                worksheetClienti.Name = "Top Clienti";
 
-                Excel.Worksheet worksheetProduse = (Excel.Worksheet)workbook.Worksheets.Add();
-                worksheetProduse.Name = "Top Produse";
-
-                // Genereaza raportul complet
-                var generator = new RapoarteExcelGenerator();
-
-                var topProduse = CalculeazaTopProduse(facturi);
-                CreazaSheetTopProduseSimplificat(worksheetProduse, topProduse);
-
-                var topClienti = CalculeazaTopClienti(facturi);
-                CreazaSheetTopClientiSimplificat(worksheetClienti, topClienti);
-
-                var vanzariLunare = CalculeazaVanzariPeLuni(facturi);
-                CreazaSheetVanzariLunareSimplificat(worksheetVanzari, vanzariLunare);
-
-                // Formatare log sheet
-                ((Excel.Range)logSheet.Columns["A:A"]).ColumnWidth = 12;
-                ((Excel.Range)logSheet.Columns["B:B"]).ColumnWidth = 18;
-                ((Excel.Range)logSheet.Columns["C:C"]).ColumnWidth = 40;
-                ((Excel.Range)logSheet.Columns["D:D"]).ColumnWidth = 15;
-                ((Excel.Range)logSheet.Columns["F:F"]).ColumnWidth = 8;
-                ((Excel.Range)logSheet.Columns["G:G"]).ColumnWidth = 16;
-                ((Excel.Range)logSheet.Columns["H:H"]).ColumnWidth = 35;
-
+                // Facem Excel vizibil si activ
                 excelApp.ScreenUpdating = true;
+                excelApp.Visible = true;
+                excelApp.DisplayAlerts = true;
                 logSheet.Activate();
 
                 MessageBox.Show(
@@ -261,6 +292,33 @@ namespace ProiectIngineriaProgramarii
                     "Raport Interactiv cu Logging Activ",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+            }
+            catch (System.Runtime.InteropServices.COMException comEx)
+            {
+                if (excelApp != null)
+                {
+                    try 
+                    { 
+                        excelApp.ScreenUpdating = true;
+                        excelApp.DisplayAlerts = true;
+                    } 
+                    catch { }
+                }
+
+                if (workbook != null)
+                {
+                    try { workbook.Close(false); } catch { }
+                }
+                if (excelApp != null)
+                {
+                    try { excelApp.Quit(); } catch { }
+                }
+
+                MessageBox.Show(
+                    $"Eroare COM la comunicarea cu Excel:\n{comEx.Message}\n\nAsigurati-va ca Excel este instalat corect.",
+                    "Eroare Excel",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -425,6 +483,47 @@ namespace ProiectIngineriaProgramarii
                 yAxis.HasTitle = true;
                 yAxis.AxisTitle.Text = "Vanzari (RON)";
             }
+        }
+
+        private static Excel.Workbook _workbookActiv = null;
+
+        private void AdaugaButonEditareDate(Excel.Worksheet worksheet, Excel.Workbook workbook)
+        {
+            try
+            {
+                _workbookActiv = workbook;
+
+                // Adauga shape (buton) pe sheet
+                Excel.Shape btnShape = worksheet.Shapes.AddShape(
+                    Microsoft.Office.Core.MsoAutoShapeType.msoShapeRoundedRectangle,
+                    480, 380, 150, 35);
+
+                btnShape.TextFrame.Characters().Text = "Editeaza Date";
+                btnShape.TextFrame.Characters().Font.Size = 11;
+                btnShape.TextFrame.Characters().Font.Bold = Microsoft.Office.Core.MsoTriState.msoTrue;
+                btnShape.Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LightBlue);
+                btnShape.TextFrame.HorizontalAlignment = (Excel.XlHAlign)Microsoft.Office.Core.MsoHorizontalAnchor.msoAnchorCenter;
+                btnShape.TextFrame.VerticalAlignment = (Excel.XlVAlign)Microsoft.Office.Core.MsoVerticalAnchor.msoAnchorMiddle;
+
+                // Nota: Butonul Shape nu poate apela direct cod C#
+                // Utilizatorul va dubla-click pe o celula pentru editare
+                // SAU putem adauga un mesaj text
+                Excel.Range celulaMesaj = (Excel.Range)worksheet.Cells[24, 1];
+                celulaMesaj.Value = "Pentru editare: dublu-click pe valoarea din coloana B (Vanzari)";
+                celulaMesaj.Font.Italic = true;
+                celulaMesaj.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.DarkBlue);
+            }
+            catch (Exception ex)
+            {
+                // Daca nu merge cu Shape, ignora
+                System.Diagnostics.Debug.WriteLine($"Nu s-a putut adauga buton: {ex.Message}");
+            }
+        }
+
+        private void CreazaUserFormEditareVanzari(Excel.Application excelApp, Excel.Workbook workbook, Excel.Worksheet worksheet)
+        {
+            // METODA VECHE - NU MAI E FOLOSITA
+            // Inlocuita cu AdaugaButonEditareDate care foloseste doar Excel Interop fara VBA
         }
     }
 }
