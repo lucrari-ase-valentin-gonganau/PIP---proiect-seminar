@@ -63,11 +63,38 @@ namespace ProiectIngineriaProgramarii.Data
                     Cantitate INTEGER NOT NULL,
                     PretUnitar REAL NOT NULL,
                     Subtotal REAL NOT NULL,
+                    UnitateMasura TEXT DEFAULT 'buc',
                     FOREIGN KEY (FacturaId) REFERENCES Facturi(Id),
                     FOREIGN KEY (ProdusId) REFERENCES Produse(Id)
                 );
             ";
             command.ExecuteNonQuery();
+
+            // Adauga coloana UnitateMasura daca nu exista (pentru baze de date existente)
+            try
+            {
+                var checkCommand = connection.CreateCommand();
+                checkCommand.CommandText = "PRAGMA table_info(ItemuriFactura)";
+                using var reader = checkCommand.ExecuteReader();
+                bool hasUnitateMasura = false;
+                while (reader.Read())
+                {
+                    if (reader.GetString(1) == "UnitateMasura")
+                    {
+                        hasUnitateMasura = true;
+                        break;
+                    }
+                }
+                reader.Close();
+
+                if (!hasUnitateMasura)
+                {
+                    var alterCommand = connection.CreateCommand();
+                    alterCommand.CommandText = "ALTER TABLE ItemuriFactura ADD COLUMN UnitateMasura TEXT DEFAULT 'buc'";
+                    alterCommand.ExecuteNonQuery();
+                }
+            }
+            catch { }
         }
 
         public SqliteConnection GetConnection()

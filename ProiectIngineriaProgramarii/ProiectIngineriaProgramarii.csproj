@@ -28,6 +28,12 @@
       <Private>true</Private>
       <CopyLocal>true</CopyLocal>
     </Reference>
+    <Reference Include="Microsoft.Vbe.Interop">
+      <HintPath>C:\Windows\assembly\GAC_MSIL\Microsoft.Vbe.Interop\15.0.0.0__71e9bce111e9429c\Microsoft.Vbe.Interop.dll</HintPath>
+      <Private>true</Private>
+      <CopyLocal>true</CopyLocal>
+      <EmbedInteropTypes>false</EmbedInteropTypes>
+    </Reference>
   </ItemGroup>
 
 </Project>

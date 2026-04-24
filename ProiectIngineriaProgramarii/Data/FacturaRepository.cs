@@ -214,7 +214,7 @@ namespace ProiectIngineriaProgramarii.Data
 
             var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT Id, FacturaId, ProdusId, NumeProdus, Cantitate, PretUnitar, Subtotal
+                SELECT Id, FacturaId, ProdusId, NumeProdus, Cantitate, PretUnitar, Subtotal, UnitateMasura
                 FROM ItemuriFactura
                 WHERE FacturaId = $facturaId
             ";
@@ -231,7 +231,8 @@ namespace ProiectIngineriaProgramarii.Data
                     NumeProdus = reader.GetString(3),
                     Cantitate = reader.GetInt32(4),
                     PretUnitar = reader.GetDecimal(5),
-                    Subtotal = reader.GetDecimal(6)
+                    Subtotal = reader.GetDecimal(6),
+                    UnitateMasura = reader.IsDBNull(7) ? "buc" : reader.GetString(7)
                 });
             }
 
@@ -242,8 +243,8 @@ namespace ProiectIngineriaProgramarii.Data
         {
             var command = connection.CreateCommand();
             command.CommandText = @"
-                INSERT INTO ItemuriFactura (FacturaId, ProdusId, NumeProdus, Cantitate, PretUnitar, Subtotal)
-                VALUES ($facturaId, $produsId, $nume, $cant, $pret, $subtotal)
+                INSERT INTO ItemuriFactura (FacturaId, ProdusId, NumeProdus, Cantitate, PretUnitar, Subtotal, UnitateMasura)
+                VALUES ($facturaId, $produsId, $nume, $cant, $pret, $subtotal, $um)
             ";
             command.Parameters.AddWithValue("$facturaId", facturaId);
             command.Parameters.AddWithValue("$produsId", item.ProdusId);
@@ -251,6 +252,7 @@ namespace ProiectIngineriaProgramarii.Data
             command.Parameters.AddWithValue("$cant", item.Cantitate);
             command.Parameters.AddWithValue("$pret", item.PretUnitar);
             command.Parameters.AddWithValue("$subtotal", item.Subtotal);
+            command.Parameters.AddWithValue("$um", item.UnitateMasura ?? "buc");
 
             command.ExecuteNonQuery();
         }

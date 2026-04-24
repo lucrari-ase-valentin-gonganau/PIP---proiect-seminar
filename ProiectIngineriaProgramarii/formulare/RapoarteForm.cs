@@ -493,30 +493,113 @@ namespace ProiectIngineriaProgramarii
             {
                 _workbookActiv = workbook;
 
-                // Adauga shape (buton) pe sheet
-                Excel.Shape btnShape = worksheet.Shapes.AddShape(
-                    Microsoft.Office.Core.MsoAutoShapeType.msoShapeRoundedRectangle,
-                    480, 380, 150, 35);
+                // Adauga modul VBA cu macro pentru editare
+                string moduleName = "ModulEditareVanzari";
+                string macroCode = @"
+Sub EditareVanzariInteractiv()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets(""Vanzari Lunare"")
 
-                btnShape.TextFrame.Characters().Text = "Editeaza Date";
-                btnShape.TextFrame.Characters().Font.Size = 11;
-                btnShape.TextFrame.Characters().Font.Bold = Microsoft.Office.Core.MsoTriState.msoTrue;
-                btnShape.Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LightBlue);
-                btnShape.TextFrame.HorizontalAlignment = (Excel.XlHAlign)Microsoft.Office.Core.MsoHorizontalAnchor.msoAnchorCenter;
-                btnShape.TextFrame.VerticalAlignment = (Excel.XlVAlign)Microsoft.Office.Core.MsoVerticalAnchor.msoAnchorMiddle;
+    ' Afla cate luni sunt
+    Dim ultimRand As Long
+    ultimRand = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
 
-                // Nota: Butonul Shape nu poate apela direct cod C#
-                // Utilizatorul va dubla-click pe o celula pentru editare
-                // SAU putem adauga un mesaj text
+    If ultimRand < 4 Then
+        MsgBox ""Nu exista date de editat!"", vbExclamation
+        Exit Sub
+    End If
+
+    ' Construieste lista de luni
+    Dim listLuni As String
+    listLuni = ""Selectati luna de editat:"" & vbCrLf & vbCrLf
+    Dim i As Long
+    For i = 4 To ultimRand
+        If ws.Cells(i, 1).Value <> """" Then
+            listLuni = listLuni & (i - 3) & "". "" & ws.Cells(i, 1).Value & "" - "" & Format(ws.Cells(i, 2).Value, ""#,##0.00"") & "" RON"" & vbCrLf
+        End If
+    Next i
+
+    ' Cere utilizatorului sa selecteze linia
+    Dim inputLinie As String
+    inputLinie = InputBox(listLuni & vbCrLf & ""Introduceti numarul liniei (1-"" & (ultimRand - 3) & ""):"", ""Editare Vanzari"")
+
+    If inputLinie = """" Then Exit Sub
+
+    If Not IsNumeric(inputLinie) Then
+        MsgBox ""Introduceti un numar valid!"", vbExclamation
+        Exit Sub
+    End If
+
+    Dim linie As Long
+    linie = CLng(inputLinie) + 3
+
+    If linie < 4 Or linie > ultimRand Then
+        MsgBox ""Numar linie invalid!"", vbExclamation
+        Exit Sub
+    End If
+
+    ' Afiseaza luna selectata si cere noua valoare
+    Dim lunaSelectata As String
+    Dim valoareVeche As Double
+    lunaSelectata = ws.Cells(linie, 1).Value
+    valoareVeche = ws.Cells(linie, 2).Value
+
+    Dim nouaValoare As String
+    nouaValoare = InputBox(""Luna: "" & lunaSelectata & vbCrLf & vbCrLf & _
+                           ""Valoare actuala: "" & Format(valoareVeche, ""#,##0.00"") & "" RON"" & vbCrLf & vbCrLf & _
+                           ""Introduceti noua valoare:"", _
+                           ""Editare Valoare Vanzari"", _
+                           Format(valoareVeche, ""0.00""))
+
+    If nouaValoare = """" Then Exit Sub
+
+    If Not IsNumeric(nouaValoare) Then
+        MsgBox ""Introduceti o valoare numerica valida!"", vbExclamation
+        Exit Sub
+    End If
+
+    ' Actualizeaza valoarea
+    ws.Cells(linie, 2).Value = CDbl(nouaValoare)
+
+    ' Refresh chart (graficul se actualizeaza automat)
+    MsgBox ""Valoarea pentru "" & lunaSelectata & "" a fost actualizata la "" & Format(CDbl(nouaValoare), ""#,##0.00"") & "" RON!"", vbInformation, ""Succes""
+End Sub
+";
+
+                // Adauga modulul VBA direct prin Workbook
+                var vbComp = workbook.VBProject.VBComponents.Add(Microsoft.Vbe.Interop.vbext_ComponentType.vbext_ct_StdModule);
+                vbComp.Name = moduleName;
+                vbComp.CodeModule.AddFromString(macroCode);
+
+                // Adauga buton care apeleaza macro-ul
+                Excel.Buttons buttons = (Excel.Buttons)worksheet.Buttons(Type.Missing);
+                Excel.Button btn = (Excel.Button)buttons.Add(480, 380, 150, 35);
+                btn.Caption = "Editeaza Date";
+                btn.OnAction = moduleName + ".EditareVanzariInteractiv";
+
+                // Font buton
+                btn.Font.Size = 11;
+                btn.Font.Bold = true;
+
+                // Adauga mesaj informativ
                 Excel.Range celulaMesaj = (Excel.Range)worksheet.Cells[24, 1];
-                celulaMesaj.Value = "Pentru editare: dublu-click pe valoarea din coloana B (Vanzari)";
+                celulaMesaj.Value = "Apasati butonul 'Editeaza Date' pentru a modifica valorile vanzarilor";
                 celulaMesaj.Font.Italic = true;
-                celulaMesaj.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.DarkBlue);
+                celulaMesaj.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.DarkGreen);
             }
             catch (Exception ex)
             {
-                // Daca nu merge cu Shape, ignora
-                System.Diagnostics.Debug.WriteLine($"Nu s-a putut adauga buton: {ex.Message}");
+                // Daca nu merge cu VBA (nu e activat Trust Access), pune doar mesaj
+                try
+                {
+                    Excel.Range celulaMesaj = (Excel.Range)worksheet.Cells[24, 1];
+                    celulaMesaj.Value = "Pentru editare: modificati direct valorile din coloana B (Vanzari). Graficul se actualizeaza automat.";
+                    celulaMesaj.Font.Italic = true;
+                    celulaMesaj.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.OrangeRed);
+                }
+                catch { }
+
+                System.Diagnostics.Debug.WriteLine($"Nu s-a putut adauga macro VBA: {ex.Message}");
             }
         }
 

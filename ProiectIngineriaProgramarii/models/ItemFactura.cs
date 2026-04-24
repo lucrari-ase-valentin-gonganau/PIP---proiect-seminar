@@ -9,6 +9,7 @@ namespace ProiectIngineriaProgramarii.Models
         public int Cantitate { get; set; }
         public decimal PretUnitar { get; set; }
         public decimal Subtotal { get; set; }
+        public string UnitateMasura { get; set; } = "buc";
 
         public void CalculeazaSubtotal()
         {
